@@ -630,38 +630,109 @@ show_status() {
 # ---------------------------------------------------------------------
 #  MENU
 # ---------------------------------------------------------------------
+nexus_splash() {
+    clear 2>/dev/null || true
+    printf '\033[?25l'
+    trap 'printf "\033[?25h"; exit 130' INT TERM
+
+    printf '\033[1;96m'
+    cat <<'ART'
+ _   _ _____  ___  _   _ __  __
+| \ | | ____|/ _ \| | | |  \/  |
+|  \| |  _| | | | | | | | |\/| |
+| |\  | |___| |_| | |_| | |  | |
+|_| \_|_____|\___/ \___/|_|  |_|
+ART
+    printf '\033[0m\n'
+    printf '  \033[1;95mN E X U S   H O S T\033[0m\n'
+    printf '  \033[1;96mDevelopers:\033[0m \033[1;92mKaidrix\033[0m \033[1;95m•\033[0m \033[1;93mNexusCloud Team\033[0m\n'
+    printf '  \033[1;95mINITIALIZING \033[0m['
+
+    local i
+    for ((i=0; i<24; i++)); do
+        case $((i % 4)) in
+            0) printf '\033[1;96m█\033[0m' ;;
+            1) printf '\033[1;95m█\033[0m' ;;
+            2) printf '\033[1;93m█\033[0m' ;;
+            3) printf '\033[1;92m█\033[0m' ;;
+        esac
+        sleep 0.04
+    done
+
+    printf '] \033[1;92mREADY!\033[0m\n'
+    sleep 0.4
+    printf '\033[?25h'
+    trap - INT TERM
+    clear 2>/dev/null || true
+}
+
+launch_hub_feature() {
+    local path="$1"
+    local root encoded tmpfile
+
+    root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [[ -f "$root/$path" ]]; then
+        bash "$root/$path"
+        return
+    fi
+
+    encoded="${path// /%20}"
+    tmpfile="$(mktemp)"
+
+    if ! curl -fsSL "${REPO_RAW}/${encoded}" -o "$tmpfile"; then
+        printf '\033[1;91mCould not download:\033[0m %s\n' "$path"
+        rm -f "$tmpfile"
+        return 1
+    fi
+
+    bash "$tmpfile"
+    local result=$?
+    rm -f "$tmpfile"
+    return "$result"
+}
+
 menu() {
-    local c ram disk up
+    local choice ram disk uptime_text
+
     while true; do
         banner
-        ram=$(free -m 2>/dev/null | awk '/Mem:/ {printf "%d%%", ($3/$2)*100}')
-        disk=$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')
-        up=$(uptime -p 2>/dev/null | sed 's/^up //')
-        printf '\n  %s╔═══════════════════════════════════════════════════════╗%s\n' "$C" "$N"
-        printf '  %s║%s  %sN E X U S   H O S T%s  %sCONTROL CENTER%s           %s║%s\n' "$C" "$N" "$M" "$N" "$Y" "$N" "$C" "$N"
-        printf '  %s╠═══════════════════════════════════════════════════════╣%s\n' "$C" "$N"
-        printf '  %s║%s  %sSYSTEM%s RAM %s%-5s%s DISK %s%-5s%s UP %s%-12.12s%s %s║%s\n' "$C" "$N" "$Y" "$N" "$G" "${ram:-N/A}" "$N" "$B" "${disk:-N/A}" "$N" "$M" "${up:-unknown}" "$N" "$C" "$N"
-        printf '  %s╠═══════════════════════════════════════════════════════╣%s\n' "$C" "$N"
-        printf '  %s║%s  %sDEPLOYMENT%s                                       %s║%s\n' "$C" "$N" "$M" "$N" "$C" "$N"
-        printf '  %s║%s  %s[1]%s Install Pterodactyl Panel                     %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s  %s[2]%s Install Wings Node                           %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s  %s[3]%s Install Panel + Wings                        %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s  %s[4]%s Link Wings to Panel                          %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s╠═══════════════════════════════════════════════════════╣%s\n' "$C" "$N"
-        printf '  %s║%s  %sMAINTENANCE%s                                      %s║%s\n' "$C" "$N" "$B" "$N" "$C" "$N"
-        printf '  %s║%s  %s[5]%s System status                                %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s  %s[0]%s Exit                                         %s║%s\n' "$C" "$N" "$R" "$N" "$C" "$N"
-        printf '  %s╚═══════════════════════════════════════════════════════╝%s\n\n' "$C" "$N"
-        printf '  %s➜%s %sChoose option [0-5]:%s ' "$M" "$N" "$W" "$N"
-        read -r c || c=0
-        case "$c" in
+
+        ram="$(free -m 2>/dev/null | awk '/Mem:/ {if ($2>0) printf "%d%%", $3/$2*100}')"
+        disk="$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')"
+        uptime_text="$(uptime -p 2>/dev/null | sed 's/^up //')"
+
+        printf '\n  %s╔════════════════════════════════════╦════════════════════════════════════╗%s\n' "$C" "$N"
+        printf '  %s║%s %sCORE INSTALLER%s                   %s║%s %sMANAGERS & EXTRAS%s                %s║%s\n' "$C" "$N" "$M" "$N" "$C" "$N" "$B" "$N" "$C" "$N"
+        printf '  %s║%s %s[1]%s Install Pterodactyl Panel     %s║%s %s[7]%s Panel Manager                   %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s %s[2]%s Install Wings Node            %s║%s %s[8]%s Wings Manager                  %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s %s[3]%s Install Panel + Wings         %s║%s %s[9]%s Toolbox                        %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s %s[4]%s Link Wings to Panel           %s║%s %s[10]%s Themes & Extensions            %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s %s[5]%s System Status                %s║%s %s[11]%s VM Manager                     %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s %s[6]%s Open Master Hub              %s║%s %s[12]%s Extras                         %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s╠════════════════════════════════════╩════════════════════════════════════╣%s\n' "$C" "$N"
+        printf '  %s║%s %sRAM:%s %-7s %sDISK:%s %-6s %sUP:%s %-20s %s║%s\n' "$C" "$N" "$Y" "$N" "${ram:-N/A}" "$Y" "$N" "${disk:-N/A}" "$Y" "$N" "${uptime_text:-unknown}" "$C" "$N"
+        printf '  %s║%s %s[0]%s Exit                                                                    %s║%s\n' "$C" "$N" "$R" "$N" "$C" "$N"
+        printf '  %s╚══════════════════════════════════════════════════════════════════════════╝%s\n\n' "$C" "$N"
+
+        printf '  %s➜%s Choose option %s[0-12]%s: ' "$M" "$N" "$W" "$N"
+        read -r choice || choice=0
+
+        case "$choice" in
             1) install_panel; pause ;;
             2) install_wings; pause ;;
             3) install_panel; install_wings; pause ;;
             4) link_wings; pause ;;
             5) show_status; pause ;;
-            0|exit|quit) echo "  ${C}Bye from ${BRAND}!${N}"; exit 0 ;;
-            *) warn "Invalid option — choose 0 to 5"; sleep 1 ;;
+            6) launch_hub_feature "menu/UI.sh"; pause ;;
+            7) launch_hub_feature "panel/1.sh"; pause ;;
+            8) launch_hub_feature "wings/run.sh"; pause ;;
+            9) launch_hub_feature "toolbox/run.sh"; pause ;;
+            10) launch_hub_feature "thame/run.sh"; pause ;;
+            11) launch_hub_feature "setup vm/menu.sh"; pause ;;
+            12) launch_hub_feature "Extras/run.sh"; pause ;;
+            0|exit|quit) printf '  %sGoodbye!%s\n' "$C" "$N"; exit 0 ;;
+            *) printf '\033[1;91mInvalid option. Choose 0–12.\033[0m\n'; sleep 1 ;;
         esac
     done
 }
@@ -672,7 +743,7 @@ main() {
         wings)  preflight; banner; install_wings ;;
         both)   preflight; banner; install_panel; install_wings ;;
         link)   preflight; banner; link_wings ;;
-        menu)   preflight; menu ;;
+        menu)   nexus_splash; preflight; menu ;;
         *) echo "Usage: $0 [panel|wings|both|link|status]"; exit 1 ;;
     esac
 }
