@@ -1,0 +1,268 @@
+#!/bin/bash
+# NexusCloud shared UI (bright colours, ASCII boxes)
+_nx_d="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
+for _nx_p in "$_nx_d/lib" "$_nx_d/../lib" "$_nx_d/../../lib"; do [ -f "$_nx_p/ui.sh" ] && { source "$_nx_p/ui.sh"; break; }; done
+type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main/lib/ui.sh")
+
+# ====================================================
+#       PTERODACTYL CONTROL CENTER v2.1
+# ====================================================
+
+# --- COLORS & STYLING ---
+RED="${NX_R}"
+GREEN="${NX_G}"
+YELLOW="${NX_Y}"
+BLUE="${NX_B}"
+PURPLE="${NX_M}"
+CYAN="${NX_C}"
+WHITE="${NX_W}"
+BOLD="${NX_W}"
+NC="${NX_N}"
+
+# --- UI HELPER FUNCTIONS ---
+
+show_header() {
+    nx_box "$1"
+}
+
+status_msg() {
+    # $1 = Type (OK, ERR, INFO, WAIT), $2 = Message
+    case $1 in
+        "OK")   echo -e "  [${GREEN} + ${NC}] $2" ;;
+        "ERR")  echo -e "  [${RED} x ${NC}] $2" ;;
+        "INFO") echo -e "  [${CYAN} > ${NC}] $2" ;;
+        "WAIT") echo -e "  [${YELLOW} ... ${NC}] $2" ;;
+    esac
+}
+
+pause() {
+    echo ""
+    read -p "  Press [Enter] to return to main menu..."
+}
+
+# ================== INSTALL FUNCTION ==================
+install_ptero() {
+    show_header "PANEL INSTALLATION"
+    
+    status_msg "INFO" "Initiating installation script..."
+    sleep 1
+    
+    # Run the external script
+    bash <(curl -s https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/panel/reviactyl/install.sh)
+    
+    echo ""
+    status_msg "OK" "Installation Sequence Complete."
+    pause
+}
+
+# ================== CREATE USER ==================
+create_user() {
+    show_header "USER MANAGEMENT"
+
+    if [ ! -d /var/www/reviactyl ]; then
+        status_msg "ERR" "Panel directory not found (/var/www/pterodactyl)."
+        status_msg "ERR" "Please install the panel first."
+        pause
+        return
+    fi
+
+    echo ""
+    echo "1) Custom User Create"
+    echo "2) Auto Create Admin User"
+    echo ""
+    read -p "Choose option: " choice
+
+    cd /var/www/reviactyl || exit
+
+    if [ "$choice" = "1" ]; then
+        status_msg "WAIT" "Launching manual user creation..."
+        php artisan p:user:make
+
+    elif [ "$choice" = "2" ]; then
+        status_msg "WAIT" "Creating auto admin user..."
+
+        USERNAME="user$(openssl rand -hex 2)"
+        PASSWORD="$(openssl rand -base64 10)"
+        EMAIL="$(openssl rand -base64 4)@email.com"
+        FIRST="$(openssl rand -base64 6)"
+        LAST="$(openssl rand -base64 4)"
+        php artisan p:user:make -n \
+            --email=${EMAIL} \
+            --username=${USERNAME} \
+            --password=${PASSWORD} \
+            --admin=1 \
+            --name-first=${FIRST} \
+            --name-last=${LAST}
+
+        echo ""
+        status_msg "OK" "Auto User Created!"
+        echo "Username: $USERNAME"
+        echo "Password: $PASSWORD"
+        echo "Email:    $EMAIL"
+    else
+        status_msg "ERR" "Invalid option."
+    fi
+
+    pause
+}
+# ================= PANEL UNINSTALL =================
+uninstall_logic() {
+    status_msg "WAIT" "Stopping Panel services..."
+    systemctl stop reviq.service 2>/dev/null || true
+    systemctl disable reviq.service 2>/dev/null || true
+    rm -f /etc/systemd/system/reviq.service
+    systemctl daemon-reload
+
+    status_msg "WAIT" "Removing cronjobs..."
+    crontab -l | grep -v 'php /var/www/reviactyl/artisan schedule:run' | crontab - || true
+
+    status_msg "WAIT" "Deleting panel files..."
+    rm -rf /var/www/reviactyl
+
+    status_msg "WAIT" "Dropping database and users..."
+    mysql -u root -e "DROP DATABASE IF EXISTS reviactyl;"
+    mysql -u root -e "DROP USER IF EXISTS 'reviactyl'@'127.0.0.1';"
+    mysql -u root -e "FLUSH PRIVILEGES;"
+
+    status_msg "WAIT" "Cleaning Nginx configs..."
+    rm -f /etc/nginx/sites-enabled/reviactyl.conf
+    rm -f /etc/nginx/sites-available/reviactyl.conf
+    systemctl reload nginx || true
+}
+
+uninstall_ptero() {
+    show_header "UNINSTALLATION"
+    
+    echo -e "${RED}  WARNING: This will delete all panel data and databases!${NC}"
+    read -p "  Are you sure you want to proceed? (y/N): " confirm
+    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+        status_msg "INFO" "Uninstallation cancelled."
+        pause
+        return
+    fi
+
+    echo ""
+    uninstall_logic
+    
+    echo ""
+    status_msg "OK" "Panel removed successfully (Wings untouched)."
+    pause
+}
+
+Migrating() {
+    clear
+    echo -e "${YELLOW}"
+    echo "-----------------------------------------------"
+    echo "        ! Update = Reviactyl !         "
+    echo "-----------------------------------------------${NC}"
+
+      cd /var/www/pterodactyl || {
+        echo -e "${RED}x Panel not found!${NC}"
+        read
+        return
+    }
+
+    php artisan down
+    cd /var/www/pterodactyl
+    rm -rf *
+    curl -Lo panel.tar.gz https://github.com/reviactyl/panel/releases/latest/download/panel.tar.gz
+    tar -xzvf panel.tar.gz
+    chmod -R 755 storage/* bootstrap/cache/
+    COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
+    php artisan migrate --seed --force
+    chown -R www-data:www-data /var/www/pterodactyl/*
+    sudo systemctl enable --now pteroq.service
+    php artisan up
+    echo -e "${GREEN} Panel Updated Successfully${NC}"
+    read -p "Press Enter to return..."
+}
+# ================= UPDATE FUNCTION =================
+update_panel() {
+    show_header "SYSTEM UPDATE"
+
+    if [ ! -d /var/www/reviactyl ]; then
+        status_msg "ERR" "Panel not found in /var/www/pterodactyl"
+        pause
+        return
+    fi
+
+    status_msg "INFO" "Putting panel into Maintenance Mode..."
+    cd /var/www/reviactyl
+    php artisan down
+    sudo rm -rf /var/www/reviactyl/*
+    cd /var/www/reviactyl
+    status_msg "INFO" "Downloading latest release..."
+    curl -Lo panel.tar.gz https://github.com/reviactyl/panel/releases/latest/download/panel.tar.gz
+    tar -xzvf panel.tar.gz
+    status_msg "INFO" "Setting permissions..."
+    chmod -R 755 storage/* bootstrap/cache/
+
+    status_msg "INFO" "Updating Composer dependencies..."
+    COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
+    
+    status_msg "INFO" "Clearing cache and database migration..."
+    php artisan view:clear
+    php artisan config:clear
+    php artisan migrate --seed --force
+    chown -R www-data:www-data /var/www/reviactyl/*
+    
+    status_msg "INFO" "Restarting Queue Workers..."
+    php artisan queue:restart
+    php artisan up
+
+    echo ""
+    status_msg "OK" "Panel Updated Successfully."
+    pause
+}
+
+# ===================== MAIN MENU =====================
+while true; do
+    clear
+    
+    # Banner
+echo -e "${PURPLE}ooooooooo.                          o8o                          .               oooo  ${NC}"
+echo -e "${PURPLE}\`888   \`Y88.                        \`\"'                        .o8               \`888  ${NC}"
+echo -e "${PURPLE} 888   .d88'  .ooooo.  oooo    ooo oooo   .oooo.    .ooooo.  .o888oo oooo    ooo  888  ${NC}"
+echo -e "${PURPLE} 888ooo88P'  d88' \`88b  \`88.  .8'  \`888  \`P  )88b  d88' \`\"Y8   888    \`88.  .8'   888  ${NC}"
+echo -e "${PURPLE} 888\`88b.    888ooo888   \`88..8'    888   .oP\"888  888         888     \`88..8'    888  ${NC}"
+echo -e "${PURPLE} 888  \`88b.  888    .o    \`888'     888  d8(  888  888   .o8   888 .    \`888'     888  ${NC}"
+echo -e "${PURPLE}o888o  o888o \`Y8bod8P'     \`8'     o888o \`Y888\"\"8o \`Y8bod8P'   \"888\"     .8'     o888o ${NC}"
+echo -e "${PURPLE}                                                                     .o..P'            ${NC}"
+echo -e "${PURPLE}                                                                     \`Y8P'              ${NC}"
+    echo -e ""
+    
+    echo -e "${CYAN} +-------------------------------------------------------+${NC}"
+
+    # --- CHECK INSTALL STATUS ---
+    if [ -d "/var/www/reviactyl" ]; then
+        # Green "INSTALLED" message
+        echo -e "${CYAN} |${NC} ${BOLD}${WHITE}PANEL STATUS:${NC} ${GREEN}INSTALLED +${NC}                                 ${CYAN}|${NC}"
+    else
+        # Red "NOT INSTALLED" message
+        echo -e "${CYAN} |${NC} ${BOLD}${WHITE}PANEL STATUS:${NC} ${RED}NOT INSTALLED x${NC}                             ${CYAN}|${NC}"
+    fi
+
+    echo -e "${CYAN} +-------------------------------------------------------+${NC}"
+    echo -e "${CYAN} |${NC}                                                       ${CYAN}|${NC}"
+    echo -e "${CYAN} |${NC}  ${GREEN}[1]${NC} Install       ${GRAY}:: (Fresh Install)${NC}          ${CYAN}|${NC}"
+    echo -e "${CYAN} |${NC}  ${GREEN}[2]${NC} User          ${GRAY}:: (Add Admin/User)${NC}        ${CYAN}|${NC}"
+    echo -e "${CYAN} |${NC}  ${YELLOW}[3]${NC} Update       ${GRAY}:: (Latest Release)${NC}        ${CYAN}|${NC}"
+    echo -e "${CYAN} |${NC}  ${RED}[4]${NC} Domin           ${GRAY}:: (Chang/domin/ssl)${NC}           ${CYAN}|${NC}"
+    echo -e "${CYAN} |${NC}  ${RED}[5]${NC} Uninstall       ${GRAY}:: (Remove Data)${NC}           ${CYAN}|${NC}"
+    echo -e "${CYAN} |${NC}                                                       ${CYAN}|${NC}"
+    echo -e "${CYAN} |${NC}  ${WHITE}[0] Exit System${NC}                                   ${CYAN}|${NC}"
+    echo -e "${CYAN} +-------------------------------------------------------+${NC}"
+    echo ""
+    echo -ne "${BOLD}${WHITE}  root@ptero:~# ${NC}"
+    read choice
+
+    case $choice in
+        1) install_ptero ;;
+        2) create_user ;;
+        3) update_panel ;;
+        4) Migrating ;;
+        5) uninstall_ptero ;;
+        0) clear; exit ;;
+        *) echo -e "${RED}  Invalid option selected...${NC}"; sleep 1 ;;
+    esac
+done
