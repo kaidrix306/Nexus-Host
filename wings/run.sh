@@ -164,8 +164,8 @@ while true; do
     
     case $opt in
         1) ssl_setup ;;
-        2) bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/wings/install.sh) ;;
-        3) bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/wings/mang.sh) ;;
+        2) bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/wings/install.sh) ;;
+        3) bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/wings/mang.sh) ;;
         4) bash <(curl -fsSL "${REPO_RAW}/wings/db.sh") ;;
         5) uninstall_menu ;;
         0) 

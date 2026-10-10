@@ -283,7 +283,7 @@ auto_setup() {
             sleep 1
             
             # Run Config Script
-            bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/wings/config.sh)
+            bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/wings/config.sh)
             echo ""
             echo -e "${GREEN}>> Setup Complete! Press Enter to return to menu.${NC}"
             read

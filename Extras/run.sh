@@ -11,7 +11,7 @@ GREEN="${NX_G}"
 CYAN="${NX_C}"
 GRAY="${NX_W}"
 NC="${NX_N}"
-URL="https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/Extras"
+URL="https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/Extras"
 # ===================== PAUSE =====================
 pause() {
   read -rp "Press Enter to continue..."
@@ -62,7 +62,7 @@ infra_menu() {
       5)
         clear
         echo -e "${CYAN}Installing  docker...${NC}"
-        bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/Extras/docker.sh)
+        bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/Extras/docker.sh)
         pause
         ;;
 

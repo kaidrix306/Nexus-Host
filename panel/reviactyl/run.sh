@@ -48,7 +48,7 @@ install_ptero() {
     sleep 1
     
     # Run the external script
-    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/reviactyl/install.sh)
+    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/panel/reviactyl/install.sh)
     
     echo ""
     status_msg "OK" "Installation Sequence Complete."

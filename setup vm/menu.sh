@@ -136,7 +136,7 @@ EOF
         echo -e "${M}------------------------------------------------${N}\n"
         
         echo -e "${C} Fetching script from GitHub...${N}"
-        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/setup%20vm/vm-1.sh)
+        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/setup%20vm/vm-1.sh)
         
         echo -e "\n${M}------------------------------------------------${N}"
         read -p "<- Press Enter..."
@@ -152,7 +152,7 @@ EOF
         
         echo -e "${C} Fetching script from GitHub...${N}"
 
-        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/setup%20vm/vm-2.sh)
+        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/setup%20vm/vm-2.sh)
         
         echo -e "\n${M}------------------------------------------------${N}"
         read -p "<- Press Enter..."
@@ -168,7 +168,7 @@ EOF
         
         echo -e "${C} Fetching script from GitHub...${N}"
 
-        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/setup%20vm/vm-3.sh)
+        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/setup%20vm/vm-3.sh)
         
         echo -e "\n${M}------------------------------------------------${N}"
         read -p "<- Press Enter..."

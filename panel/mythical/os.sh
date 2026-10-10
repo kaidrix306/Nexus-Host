@@ -21,11 +21,11 @@ echo " OS Detected: $OS"
 # Auto run based on OS
 if [[ "$OS" == "ubuntu" ]]; then
     echo " Running Ubuntu installer..."
-    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/mythical/Ubuntu.sh) 
+    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/panel/mythical/Ubuntu.sh) 
 
 elif [[ "$OS" == "debian" ]]; then
     echo " Running Debian installer..."
-    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/mythical/Debian.sh) 
+    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/panel/mythical/Debian.sh) 
 else
     echo "x Unsupported OS: $OS"
     exit 1

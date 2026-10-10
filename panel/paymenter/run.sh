@@ -48,7 +48,7 @@ install_ptero() {
     sleep 1
     
     # Run the external script
-    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/paymenter/install.sh)
+    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/panel/paymenter/install.sh)
     
     echo ""
     status_msg "OK" "Installation Sequence Complete."
@@ -228,7 +228,7 @@ while true; do
         1) install_ptero ;;
         2) create_user ;;
         3) update_panel ;;
-        4) bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/pterodactyl/ssl.sh) ;;
+        4) bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/panel/pterodactyl/ssl.sh) ;;
         5) echo -e "${YELLOW}This module was not part of this repo - skipping.${NC}"; sleep 1 ;;
         6) uninstall_ptero ;;
         0) clear; exit ;;

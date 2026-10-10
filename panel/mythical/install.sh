@@ -78,7 +78,7 @@ done
 echo -e "${GRAY}------------------------------------------------------------${NC}"
 echo -e "  ${CYAN}SUCCESS:${NC} ${WHITE}Panel is live at http://$DOMAIN${NC}"
 
-bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/mythical/os.sh) 
+bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/refs/heads/master/panel/mythical/os.sh) 
 #============================================================================================
 curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
 mkdir -p /var/www/mythicaldash
