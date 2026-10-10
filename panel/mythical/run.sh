@@ -2,7 +2,7 @@
 # NexusCloud shared UI (bright colours, ASCII boxes)
 _nx_d="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
 for _nx_p in "$_nx_d/lib" "$_nx_d/../lib" "$_nx_d/../../lib"; do [ -f "$_nx_p/ui.sh" ] && { source "$_nx_p/ui.sh"; break; }; done
-type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main/lib/ui.sh")
+type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/lib/ui.sh")
 
 # Colors for UI
 RED="${NX_R}"
@@ -46,7 +46,7 @@ while true; do
             echo -e "${CYAN}Please wait while we download and configure...${NC}\n"
             
             echo -e "${BLUE}[1/4]${NC} ${CYAN}Downloading installer...${NC}"
-            bash <(curl -s https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/panel/mythical/install.sh)
+            bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/mythical/install.sh)
             
             echo -e "\n${GREEN}+ Installation process initiated!${NC}"
             echo -e "${CYAN}Follow the on-screen instructions to complete setup.${NC}"

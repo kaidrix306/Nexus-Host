@@ -2,7 +2,7 @@
 # NexusCloud shared UI (bright colours, ASCII boxes)
 _nx_d="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
 for _nx_p in "$_nx_d/lib" "$_nx_d/../lib" "$_nx_d/../../lib"; do [ -f "$_nx_p/ui.sh" ] && { source "$_nx_p/ui.sh"; break; }; done
-type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main/lib/ui.sh")
+type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/lib/ui.sh")
 
 # COLORS
 R="\e[1;91m"; G="\e[1;92m"; Y="\e[1;93m"; B="\e[1;94m"; C="\e[1;96m"; M="\e[1;95m"; W="\e[1;97m"; N="\e[0m"
@@ -136,7 +136,7 @@ EOF
         echo -e "${M}------------------------------------------------${N}\n"
         
         echo -e "${C} Fetching script from GitHub...${N}"
-        bash <(curl -s https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/setup%20vm/vm-1.sh)
+        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/setup%20vm/vm-1.sh)
         
         echo -e "\n${M}------------------------------------------------${N}"
         read -p "<- Press Enter..."
@@ -152,7 +152,7 @@ EOF
         
         echo -e "${C} Fetching script from GitHub...${N}"
 
-        bash <(curl -s https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/setup%20vm/vm-2.sh)
+        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/setup%20vm/vm-2.sh)
         
         echo -e "\n${M}------------------------------------------------${N}"
         read -p "<- Press Enter..."
@@ -168,7 +168,7 @@ EOF
         
         echo -e "${C} Fetching script from GitHub...${N}"
 
-        bash <(curl -s https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/setup%20vm/vm-3.sh)
+        bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/setup%20vm/vm-3.sh)
         
         echo -e "\n${M}------------------------------------------------${N}"
         read -p "<- Press Enter..."

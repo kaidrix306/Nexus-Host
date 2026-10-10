@@ -2,7 +2,7 @@
 # NexusCloud shared UI (bright colours, ASCII boxes)
 _nx_d="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
 for _nx_p in "$_nx_d/lib" "$_nx_d/../lib" "$_nx_d/../../lib"; do [ -f "$_nx_p/ui.sh" ] && { source "$_nx_p/ui.sh"; break; }; done
-type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main/lib/ui.sh")
+type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/lib/ui.sh")
 nx_banner "EXTRAS > RUN"
 
 # ===================== COLORS =====================
@@ -11,7 +11,7 @@ GREEN="${NX_G}"
 CYAN="${NX_C}"
 GRAY="${NX_W}"
 NC="${NX_N}"
-URL="https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/Extras"
+URL="https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/Extras"
 # ===================== PAUSE =====================
 pause() {
   read -rp "Press Enter to continue..."
@@ -62,7 +62,7 @@ infra_menu() {
       5)
         clear
         echo -e "${CYAN}Installing  docker...${NC}"
-        bash <(curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/Extras/docker.sh)
+        bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/Extras/docker.sh)
         pause
         ;;
 

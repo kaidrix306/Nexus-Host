@@ -2,8 +2,8 @@
 # NexusCloud shared UI (bright colours, ASCII boxes)
 _nx_d="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
 for _nx_p in "$_nx_d/lib" "$_nx_d/../lib" "$_nx_d/../../lib"; do [ -f "$_nx_p/ui.sh" ] && { source "$_nx_p/ui.sh"; break; }; done
-type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main/lib/ui.sh")
-REPO_RAW="https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main"
+type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/lib/ui.sh")
+REPO_RAW="https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master"
 
 # --- CONFIG & SEMA UI COLORS ---
 CYAN="${NX_C}"

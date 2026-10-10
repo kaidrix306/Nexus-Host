@@ -2,7 +2,7 @@
 # NexusCloud shared UI (bright colours, ASCII boxes)
 _nx_d="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
 for _nx_p in "$_nx_d/lib" "$_nx_d/../lib" "$_nx_d/../../lib"; do [ -f "$_nx_p/ui.sh" ] && { source "$_nx_p/ui.sh"; break; }; done
-type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main/lib/ui.sh")
+type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/lib/ui.sh")
 
 # ====================================================
 #       PTERODACTYL CONTROL CENTER v2.1
@@ -50,7 +50,7 @@ install_ptero() {
     sleep 1
     
     # Run the external script
-    bash <(curl -s https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/panel/pterodactyl/install.sh)
+    bash <(curl -s https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/pterodactyl/install.sh)
     
     echo ""
     status_msg "OK" "Installation Sequence Complete."
@@ -370,9 +370,9 @@ while true; do
         1) install_ptero ;;
         2) create_user ;;
         3) update_panel ;;
-        4) bash <(curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/panel/pterodactyl/ssl.sh) ;;
+        4) bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/pterodactyl/ssl.sh) ;;
         5) uninstall_ptero ;;
-        6) bash <(curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/refs/heads/main/panel/pterodactyl/phpMyAdmin.sh) ;;
+        6) bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/panel/pterodactyl/phpMyAdmin.sh) ;;
         0) clear; exit ;;
         *) echo -e "${RED}  Invalid option selected...${NC}"; sleep 1 ;;
     esac

@@ -1,7 +1,7 @@
 # NexusCloud shared UI (bright colours, ASCII boxes)
 _nx_d="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
 for _nx_p in "$_nx_d/lib" "$_nx_d/../lib" "$_nx_d/../../lib"; do [ -f "$_nx_p/ui.sh" ] && { source "$_nx_p/ui.sh"; break; }; done
-type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main/lib/ui.sh")
+type nx_banner >/dev/null 2>&1 || source <(curl -fsSL "https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/lib/ui.sh")
 nx_banner "THAME > EXTENSION2"
 # !/bin/bash
 
@@ -19,7 +19,7 @@ W="\e[97m"; N="\e[0m"
 BR="\e[1;91m"; BG="\e[1;92m"; BY="\e[1;93m"
 BM="\e[1;95m"; BC="\e[1;96m"; BW="\e[1;97m"
 
-URL="https://github.com/YOUR_GITHUB_USER/nexuscloud/raw/refs/heads/main/thame/Extension"
+URL="https://github.com/kaidrix306/Nexus-Host/raw/refs/heads/main/thame/Extension"
 selected_indices=()
 
 trap 'echo -e "\n${R}[!] Force exit detected.${N}"; exit 1' SIGINT
