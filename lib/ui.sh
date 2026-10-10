@@ -29,15 +29,23 @@ nx_row() {                       # nx_row "Label" "Value" ["Colour"]
         "$NX_C" "$NX_N" "$NX_Y" "$1" "$NX_C" "$colour" "$2" "$NX_N" "$NX_C" "$NX_N"
 }
 
+nx_art() {                       # vertical gradient: purple -> blue -> yellow
+    local c=(177 141 105 75 221 227) i=0 line
+    while IFS= read -r line; do
+        printf '\033[1;38;5;%sm%s\033[0m\n' "${c[$i]}" "$line"; i=$((i + 1))
+    done <<'ART'
+███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
+████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
+██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
+██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
+██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║
+╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+ART
+}
 nx_banner() {                    # nx_banner "SUBTITLE"
     clear 2>/dev/null || true
-    echo "${NX_C}  _   _ _____ __  __ _   _ ____${NX_N}"
-    echo "${NX_B} | \\ | | ____|\\ \\/ /| | | / ___|${NX_N}"
-    echo "${NX_M} |  \\| |  _|   \\  / | | | \\___ \\${NX_N}"
-    echo "${NX_Y} | |\\  | |___  /  \\ | |_| |___) |${NX_N}"
-    echo "${NX_G} |_| \\_|_____|/_/\\_\\ \\___/|____/${NX_N}"
-    echo
-    echo "${NX_W}   C L O U D${NX_N}"
+    nx_art
+    echo "${NX_W}   N E X U S   C L O U D${NX_N}"
     [ -n "${1:-}" ] && echo "${NX_C}   $1${NX_N}"
     nx_hline
 }

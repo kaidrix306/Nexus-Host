@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# Nexus Host — NexusCloud Installer
-# Pterodactyl Panel + Wings
+# =====================================================================
+#  NexusCloud Installer  -  Pterodactyl Panel + Wings
+#  Usage:  bash nexus.sh [panel|wings|both|link|status]
+#  Rewritten from scratch
+# =====================================================================
 set -uo pipefail
 
 VERSION="1.0.0"
@@ -12,15 +15,20 @@ PANEL_DIR="/var/www/pterodactyl"
 PHP_VER="8.3"
 export DEBIAN_FRONTEND=noninteractive
 
+# ---------------------------------------------------------------------
+#  BRIGHT COLOURS ONLY (no dim / grey)
+# ---------------------------------------------------------------------
 R=$'\e[1;91m'; G=$'\e[1;92m'; Y=$'\e[1;93m'; B=$'\e[1;94m'
 M=$'\e[1;95m'; C=$'\e[1;96m'; W=$'\e[1;97m'; N=$'\e[0m'
-INNER=55
 
-hline() {
-    printf '%s+%s+%s\n' "$C" "$(printf '%*s' "$INNER" '' | tr ' ' '-')" "$N"
-}
+INNER=55   # inner width of every box (total 57 columns)
 
-box() {
+# ---------------------------------------------------------------------
+#  ASCII UI HELPERS
+# ---------------------------------------------------------------------
+hline() { printf '%s+%s+%s\n' "${C}" "$(printf '%*s' "$INNER" '' | tr ' ' '-')" "${N}"; }
+
+box() {                       # box "TITLE"
     local t=" $1 " pad l r
     pad=$((INNER - ${#t})); l=$((pad / 2)); r=$((pad - l))
     echo
@@ -29,20 +37,21 @@ box() {
     hline
 }
 
-row() {
+row() {                       # row "Label" "Value"
     printf '%s|%s %s%-14.14s%s : %s%-36.36s%s %s|%s\n' \
         "$C" "$N" "$Y" "$1" "$C" "$W" "$2" "$N" "$C" "$N"
 }
 
-row_c() {
+row_c() {                     # row_c "Label" "Text" "Colour"  (pads before colouring)
     printf '%s|%s %s%-14.14s%s : %s%-36.36s%s %s|%s\n' \
         "$C" "$N" "$Y" "$1" "$C" "$3" "$2" "$N" "$C" "$N"
 }
 
-banner() {
-    clear 2>/dev/null || true
-    printf '\033[1;96m'
-    cat <<'ART'
+nx_art() {                       # vertical gradient: purple -> blue -> yellow
+    local c=(177 141 105 75 221 227) i=0 line
+    while IFS= read -r line; do
+        printf '\033[1;38;5;%sm%s\033[0m\n' "${c[$i]}" "$line"; i=$((i + 1))
+    done <<'ART'
 ███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
 ████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
 ██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
@@ -50,17 +59,32 @@ banner() {
 ██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║
 ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 ART
-    printf "\033[1;96m  ╔═══════════════════════════════════════════════╗\033[0m\n"
-    printf "\033[1;96m  ║\033[1;97m          N E X U S   H O S T                \033[1;96m║\033[0m\n"
-    printf "\033[1;96m  ║\033[1;93m       NEON SERVER COMMAND CENTER             \033[1;96m║\033[0m\n"
-    printf "\033[1;96m  ║\033[1;92m       By Kaidrix • NexusCloud Team           \033[1;96m║\033[0m\n"
-    printf "\033[1;96m  ╚═══════════════════════════════════════════════╝\033[0m\n\n"
 }
 
-ok()   { printf '  %s[ OK ]%s %s\n' "$G" "$N" "$*"; }
-warn() { printf '  %s[WARN]%s %s\n' "$Y" "$N" "$*"; }
-info() { printf '  %s[INFO]%s %s\n' "$B" "$N" "$*"; }
-die()  { printf '  %s[FAIL]%s %s\n' "$R" "$N" "$*"; exit 1; }
+rep() { local s; s=$(printf '%*s' "$1" ''); printf '%s' "${s// /$2}"; }          # rep COUNT CHAR
+ctr() {                                                                           # ctr TEXT WIDTH (ASCII only)
+    local t=$1 w=$2 l r
+    [ "${#t}" -gt "$w" ] && t=${t:0:w}
+    l=$(( (w - ${#t}) / 2 )); r=$(( w - ${#t} - l ))
+    printf '%*s%s%*s' "$l" '' "$t" "$r" ''
+}
+
+banner() {
+    clear 2>/dev/null || true
+    nx_art
+    local w=47
+    printf '  %s╔%s╗%s\n' "$C" "$(rep $w ═)" "$N"
+    printf '  %s║%s%s%s%s║%s\n' "$C" "$W" "$(ctr 'N E X U S   H O S T' $w)" "$N" "$C" "$N"
+    printf '  %s║%s%s%s%s║%s\n' "$C" "$Y" "$(ctr 'NEON SERVER COMMAND CENTER' $w)" "$N" "$C" "$N"
+    printf '  %s║%s%s%s%s║%s\n' "$C" "$G" "$(ctr 'By Kaidrix | NexusCloud Team' $w)" "$N" "$C" "$N"
+    printf '  %s╚%s╝%s\n\n' "$C" "$(rep $w ═)" "$N"
+}
+
+
+ok()   { printf '  %s[ OK ]%s %s\n'   "$G" "$N" "$*"; }
+warn() { printf '  %s[WARN]%s %s\n'   "$Y" "$N" "$*"; }
+info() { printf '  %s[INFO]%s %s\n'   "$B" "$N" "$*"; }
+die()  { printf '  %s[FAIL]%s %s\n'   "$R" "$N" "$*"; exit 1; }
 
 spin() {
     local pid=$1 msg=$2 i=0 f='|/-\'
@@ -70,6 +94,7 @@ spin() {
     done
 }
 
+# run "message" command [args...]  -> spinner, logs to $LOG, aborts on error
 run() {
     local msg=$1 pid rc; shift
     "$@" >>"$LOG" 2>&1 &
@@ -87,20 +112,7 @@ run() {
     fi
 }
 
-run_soft() {
-    local msg=$1 pid rc; shift
-    "$@" >>"$LOG" 2>&1 &
-    pid=$!
-    spin "$pid" "$msg"
-    wait "$pid"; rc=$?
-    printf '\r\033[K'
-    if [ "$rc" -eq 0 ]; then ok "$msg"; else
-        printf '  %s[FAIL]%s %s\n' "$R" "$N" "$msg"
-    fi
-    return "$rc"
-}
-
-ask() {
+ask() {                       # ask VAR "Prompt" "default"
     local __v=$1 p=$2 d=${3:-} in
     if [ -n "$d" ]; then
         printf '  %s>%s %s%s%s %s[%s]%s: ' "$M" "$N" "$W" "$p" "$N" "$Y" "$d" "$N"
@@ -111,7 +123,7 @@ ask() {
     printf -v "$__v" '%s' "${in:-$d}"
 }
 
-ask_secret() {
+ask_secret() {                # ask_secret VAR "Prompt"
     local __v=$1 p=$2 in
     printf '  %s>%s %s%s%s: ' "$M" "$N" "$W" "$p" "$N"
     read -rs in; echo
@@ -128,29 +140,36 @@ confirm() {
 }
 
 pause() { printf '\n  %sPress ENTER to continue...%s' "$W" "$N"; read -r _; }
+
 rand() { tr -dc 'A-Za-z0-9' </dev/urandom | head -c "${1:-24}"; }
 
+# ---------------------------------------------------------------------
+#  VALIDATION
+# ---------------------------------------------------------------------
 valid_fqdn()  { [[ $1 =~ ^([A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$ ]]; }
 valid_email() { [[ $1 =~ ^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$ ]]; }
 valid_user()  { [[ $1 =~ ^[A-Za-z0-9_.-]{3,30}$ ]]; }
 
+# ---------------------------------------------------------------------
+#  PRE-FLIGHT
+# ---------------------------------------------------------------------
 preflight() {
-    [ "$EUID" -eq 0 ] || die "Run as root"
+    [ "$EUID" -eq 0 ] || die "Run as root:  sudo -i  then run again"
     [ -r /etc/os-release ] || die "Cannot detect OS"
+    # shellcheck disable=SC1091
     . /etc/os-release
     OS_ID=$ID; OS_VER=${VERSION_ID%%.*}; OS_CODE=${VERSION_CODENAME:-}
     case "$OS_ID" in
-        ubuntu) [ "$OS_VER" -ge 22 ] || die "Ubuntu 22.04+ required" ;;
-        debian) [ "$OS_VER" -ge 11 ] || die "Debian 11+ required" ;;
-        *) die "Unsupported OS: $OS_ID" ;;
+        ubuntu) [ "$OS_VER" -ge 22 ] || die "Ubuntu 22.04+ required (found $VERSION_ID)" ;;
+        debian) [ "$OS_VER" -ge 11 ] || die "Debian 11+ required (found $VERSION_ID)" ;;
+        *) die "Unsupported OS: $OS_ID (Ubuntu 22.04+/Debian 11+ only)" ;;
     esac
     case "$(uname -m)" in
-        x86_64) ARCH=amd64 ;;
+        x86_64)  ARCH=amd64 ;;
         aarch64) ARCH=arm64 ;;
         *) die "Unsupported CPU architecture: $(uname -m)" ;;
     esac
-    local ram
-    ram=$(free -m | awk '/Mem:/ {print $2}')
+    local ram; ram=$(free -m | awk '/Mem:/ {print $2}')
     [ "$ram" -ge 1800 ] || warn "Only ${ram}MB RAM - 2GB+ recommended"
     : >>"$LOG"; chmod 600 "$LOG"
     PUBLIC_IP=$(curl -4 -s --max-time 4 https://ipinfo.io/ip 2>/dev/null || true)
@@ -158,7 +177,7 @@ preflight() {
     TZ_NAME=$(timedatectl show --property=Timezone --value 2>/dev/null || echo UTC)
 }
 
-dns_check() {
+dns_check() {                 # dns_check domain
     local resolved
     resolved=$(getent ahostsv4 "$1" 2>/dev/null | awk 'NR==1{print $1}')
     if [ -z "$resolved" ]; then
@@ -168,9 +187,12 @@ dns_check() {
     else
         ok "DNS OK: $1 -> $resolved"; return 0
     fi
-    confirm "Continue anyway? (SSL may fail)" || exit 0
+    confirm "Continue anyway? (SSL will likely fail)" || exit 0
 }
 
+# ---------------------------------------------------------------------
+#  SHARED STEPS
+# ---------------------------------------------------------------------
 s_apt_base() {
     set -e
     apt-get update -q
@@ -187,6 +209,9 @@ s_docker() {
     systemctl enable --now docker
 }
 
+# ---------------------------------------------------------------------
+#  PANEL STEPS
+# ---------------------------------------------------------------------
 s_php_repo() {
     set -e
     if [ "$OS_ID" = ubuntu ]; then
@@ -231,7 +256,7 @@ GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'127.0.0.1' WITH GRANT OPTION;
 FLUSH PRIVILEGES;"
 }
 
-set_env() {
+set_env() {                   # set_env KEY VALUE
     local k=$1 v=$2 f="$PANEL_DIR/.env"
     v=${v//\\/\\\\}; v=${v//&/\\&}; v=${v//|/\\|}
     if grep -q "^${k}=" "$f"; then sed -i "s|^${k}=.*|${k}=${v}|" "$f"
@@ -248,12 +273,12 @@ s_panel_env() {
     set -e
     cd "$PANEL_DIR"
     php artisan key:generate --force
-    set_env APP_NAME "\"${BRAND}\""
-    set_env APP_URL "\"${APP_URL}\""
-    set_env APP_TIMEZONE "$TZ_NAME"
+    set_env APP_NAME      "\"${BRAND}\""
+    set_env APP_URL       "\"${APP_URL}\""
+    set_env APP_TIMEZONE  "$TZ_NAME"
     set_env APP_ENVIRONMENT_ONLY false
-    set_env DB_HOST 127.0.0.1; set_env DB_PORT 3306
-    set_env DB_DATABASE panel; set_env DB_USERNAME pterodactyl
+    set_env DB_HOST 127.0.0.1;  set_env DB_PORT 3306
+    set_env DB_DATABASE panel;  set_env DB_USERNAME pterodactyl
     set_env DB_PASSWORD "$DB_PASS"
     set_env CACHE_DRIVER redis; set_env SESSION_DRIVER redis; set_env QUEUE_CONNECTION redis
     set_env REDIS_HOST 127.0.0.1; set_env REDIS_PORT 6379
@@ -300,6 +325,7 @@ nginx_php_block() {
     client_max_body_size 100m;
     client_body_timeout 120s;
     sendfile off;
+
     location / { try_files \$uri \$uri/ /index.php?\$query_string; }
     location ~ \.php\$ {
         fastcgi_split_path_info ^(.+\.php)(/.+)\$;
@@ -320,7 +346,7 @@ nginx_php_block() {
 EOF
 }
 
-write_nginx() {
+write_nginx() {               # write_nginx http | ssl CERT KEY
     local f=/etc/nginx/sites-available/pterodactyl.conf
     {
         if [ "$1" = ssl ]; then
@@ -378,6 +404,9 @@ s_certbot_panel() {
     write_nginx ssl "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" "/etc/letsencrypt/live/${DOMAIN}/privkey.pem"
 }
 
+# ---------------------------------------------------------------------
+#  PANEL FLOW
+# ---------------------------------------------------------------------
 panel_collect() {
     box "PANEL SETUP"
     ask DOMAIN "Panel domain (e.g. panel.example.com)"
@@ -385,7 +414,7 @@ panel_collect() {
     ask EMAIL "Admin email"
     until valid_email "$EMAIL"; do warn "Invalid email"; ask EMAIL "Admin email"; done
     ask ADMIN_USER "Admin username" "admin"
-    until valid_user "$ADMIN_USER"; do warn "Invalid username"; ask ADMIN_USER "Admin username" "admin"; done
+    until valid_user "$ADMIN_USER"; do warn "3-30 chars: letters, numbers . _ -"; ask ADMIN_USER "Admin username" "admin"; done
     while true; do
         ask_secret ADMIN_PASS "Admin password (blank = random)"
         [ -z "$ADMIN_PASS" ] && { ADMIN_PASS=$(rand 20); break; }
@@ -394,51 +423,63 @@ panel_collect() {
     done
     echo
     echo "  ${W}SSL mode:${N}"
-    echo "   ${G}1${N}) Let's Encrypt"
-    echo "   ${G}2${N}) Self-signed certificate"
-    echo "   ${G}3${N}) None / HTTP"
+    echo "   ${G}1${N}) Let's Encrypt  ${C}(domain must point here)${N}"
+    echo "   ${G}2${N}) Self-signed    ${C}(browser warning)${N}"
+    echo "   ${G}3${N}) None / HTTP    ${C}(behind Cloudflare or a proxy)${N}"
     ask SSL_CHOICE "Choose" "1"
     case "$SSL_CHOICE" in 2) SSL_MODE=selfsigned ;; 3) SSL_MODE=none ;; *) SSL_MODE=letsencrypt ;; esac
     [ "$SSL_MODE" = none ] && APP_URL="http://${DOMAIN}" || APP_URL="https://${DOMAIN}"
     DB_PASS=$(rand 24)
+
     box "REVIEW"
-    row "Domain" "$DOMAIN"
-    row "Admin" "$ADMIN_USER <$EMAIL>"
-    row "SSL" "$SSL_MODE"
-    row "PHP" "$PHP_VER"
-    row "Server" "$PUBLIC_IP"
+    row "Domain"   "$DOMAIN"
+    row "Admin"    "$ADMIN_USER <$EMAIL>"
+    row "SSL"      "$SSL_MODE"
+    row "PHP"      "$PHP_VER"
+    row "Install"  "nginx mariadb redis composer"
+    row "Server"   "$PUBLIC_IP"
     hline
     confirm "Start installation?" || exit 0
     [ "$SSL_MODE" = letsencrypt ] && dns_check "$DOMAIN"
 }
 
 install_panel() {
-    [ -f "$PANEL_DIR/.env" ] && die "Panel already exists (refusing to overwrite)"
+    [ -f "$PANEL_DIR/.env" ] && die "Panel already exists in $PANEL_DIR (refusing to overwrite)"
     panel_collect
     box "INSTALLING PANEL"
-    run "Base packages" s_apt_base
-    run "PHP repository" s_php_repo
+    run "Base packages"            s_apt_base
+    run "PHP repository"           s_php_repo
     run "PHP, MariaDB, NGINX, Redis" s_panel_packages
-    run "Composer" s_composer
-    run "Downloading panel" s_panel_download
-    run "Creating database" s_panel_db
-    run "PHP dependencies" s_composer_install
-    run "Configuring + migrating" s_panel_env
-    run "Queue worker + cron" s_panel_services
+    run "Composer"                 s_composer
+    run "Downloading panel"        s_panel_download
+    run "Creating database"        s_panel_db
+    run "PHP dependencies"         s_composer_install
+    run "Configuring + migrating"  s_panel_env
+    run "Queue worker + cron"      s_panel_services
     case "$SSL_MODE" in
-        none) run "NGINX (HTTP)" s_nginx_http ;;
-        selfsigned) run "Self-signed SSL" s_selfsigned ;;
+        none)       run "NGINX (HTTP)"         s_nginx_http ;;
+        selfsigned) run "Self-signed SSL"      s_selfsigned ;;
         letsencrypt)
             run "NGINX (HTTP bootstrap)" s_nginx_http
-            run "Installing certbot" s_install_certbot
+            run "Installing certbot"     s_install_certbot
             if ! run_soft "Let's Encrypt certificate" s_certbot_panel; then
-                warn "Let's Encrypt failed - using self-signed"
+                warn "Let's Encrypt failed - falling back to self-signed"
                 run "Self-signed SSL" s_selfsigned
                 SSL_MODE=selfsigned
             fi ;;
     esac
+    PANEL_DONE=1
     save_creds
     panel_summary
+}
+
+run_soft() {                  # like run, but returns 1 instead of exiting
+    local msg=$1 pid rc; shift
+    "$@" >>"$LOG" 2>&1 &
+    pid=$!; spin "$pid" "$msg"; wait "$pid"; rc=$?
+    printf '\r\033[K'
+    if [ "$rc" -eq 0 ]; then ok "$msg"; else printf '  %s[FAIL]%s %s\n' "$R" "$N" "$msg"; fi
+    return "$rc"
 }
 
 save_creds() {
@@ -456,18 +497,21 @@ save_creds() {
 
 panel_summary() {
     box "PANEL READY"
-    row "URL" "$APP_URL"
-    row "Username" "$ADMIN_USER"
-    row "Password" "$ADMIN_PASS"
-    row "Email" "$EMAIL"
-    row "DB user" "pterodactyl"
-    row "DB pass" "$DB_PASS"
+    row "URL"       "$APP_URL"
+    row "Username"  "$ADMIN_USER"
+    row "Password"  "$ADMIN_PASS"
+    row "Email"     "$EMAIL"
+    row "DB user"   "pterodactyl"
+    row "DB pass"   "$DB_PASS"
     hline
-    info "Credentials saved to ${CRED_FILE}"
-    info "Configure mail in Admin > Settings > Mail"
-    [ "$SSL_MODE" = selfsigned ] && warn "Browsers will show a self-signed certificate warning"
+    info "Credentials saved to ${CRED_FILE} (chmod 600)"
+    info "Set up mail in Admin > Settings > Mail (none configured)"
+    [ "$SSL_MODE" = selfsigned ] && warn "Self-signed cert: browsers will show a warning"
 }
 
+# ---------------------------------------------------------------------
+#  WINGS
+# ---------------------------------------------------------------------
 s_wings_binary() {
     set -e
     mkdir -p /etc/pterodactyl
@@ -505,7 +549,7 @@ EOF
 
 s_certbot_node() {
     set -e
-    local pre=()
+    local pre=() 
     if systemctl is-active --quiet nginx; then
         pre=(--pre-hook "systemctl stop nginx" --post-hook "systemctl start nginx")
     fi
@@ -516,8 +560,8 @@ s_certbot_node() {
 install_wings() {
     box "WINGS SETUP"
     echo "  ${W}Node SSL:${N}"
-    echo "   ${G}1${N}) Let's Encrypt"
-    echo "   ${G}2${N}) Skip certificates"
+    echo "   ${G}1${N}) Let's Encrypt for the node domain"
+    echo "   ${G}2${N}) Skip ${C}(I will provide certificates myself)${N}"
     ask NODE_SSL "Choose" "1"
     NODE_FQDN=""; NODE_EMAIL=""
     if [ "$NODE_SSL" != 2 ]; then
@@ -528,26 +572,32 @@ install_wings() {
         dns_check "$NODE_FQDN"
     fi
     box "REVIEW"
-    row "Docker" "install if missing"
-    row "Wings" "latest (${ARCH})"
+    row "Docker"  "install if missing"
+    row "Wings"   "latest (${ARCH})"
     row "Node SSL" "${NODE_FQDN:-skipped}"
     hline
     confirm "Start installation?" || exit 0
+
     box "INSTALLING WINGS"
-    run "Base packages" s_apt_base
-    run "Docker Engine" s_docker
-    run "Wings binary" s_wings_binary
-    run "Wings service" s_wings_service
+    run "Base packages"   s_apt_base
+    run "Docker Engine"   s_docker
+    run "Wings binary"    s_wings_binary
+    run "Wings service"   s_wings_service
     if [ -n "$NODE_FQDN" ]; then
         run "Installing certbot" s_install_certbot
-        run_soft "Node certificate" s_certbot_node ||
-            warn "Certificate failed - check DNS and port 80"
+        run_soft "Node certificate" s_certbot_node \
+            || warn "Certificate failed - see $LOG. Port 80 must be free and DNS correct."
     fi
     box "WINGS INSTALLED"
-    row "Binary" "/usr/local/bin/wings"
-    row "Config" "/etc/pterodactyl/config.yml"
-    row "Service" "wings (enabled, not started)"
-    info "Create a node in the panel, then run: bash nexus.sh link"
+    row "Binary"   "/usr/local/bin/wings"
+    row "Config"   "/etc/pterodactyl/config.yml"
+    row "Service"  "wings (enabled, not started)"
+    [ -n "$NODE_FQDN" ] && [ -d "/etc/letsencrypt/live/$NODE_FQDN" ] && {
+        row "Cert"   "/etc/letsencrypt/live/$NODE_FQDN/fullchain.pem"
+        row "Key"    "/etc/letsencrypt/live/$NODE_FQDN/privkey.pem"
+    }
+    hline
+    info "Next: create a node in the panel, then run:  bash nexus.sh link"
 }
 
 s_wings_configure() {
@@ -559,18 +609,22 @@ s_wings_configure() {
 link_wings() {
     [ -x /usr/local/bin/wings ] || die "Wings is not installed - run option 2 first"
     box "LINK WINGS TO PANEL"
-    info "Panel > Admin > Nodes > Configuration"
+    info "Panel > Admin > Nodes > (your node) > Configuration"
+    info "Copy the three values from the auto-deploy command"
     ask LINK_URL "Panel URL (https://panel.example.com)"
     [[ $LINK_URL =~ ^https?://[A-Za-z0-9.:-]+$ ]] || die "Invalid panel URL"
     ask LINK_NODE "Node ID" "1"
     [[ $LINK_NODE =~ ^[0-9]+$ ]] || die "Node ID must be a number"
     ask_secret LINK_TOKEN "Token (--token value, hidden)"
     [[ $LINK_TOKEN =~ ^[A-Za-z0-9_-]+$ ]] || die "Invalid token"
-    run "Writing config.yml" s_wings_configure
-    run "Starting Wings" systemctl restart wings
-    ok "Wings is running"
+    run "Writing config.yml"   s_wings_configure
+    run "Starting Wings"       systemctl restart wings
+    ok "Wings is running - check the node heart icon in the panel"
 }
 
+# ---------------------------------------------------------------------
+#  STATUS
+# ---------------------------------------------------------------------
 svc() {
     if ! systemctl list-unit-files "$1.service" 2>/dev/null | grep -q "$1.service"; then
         row_c "$1" "not installed" "$Y"
@@ -583,11 +637,11 @@ svc() {
 
 show_status() {
     box "SYSTEM STATUS"
-    row "Host" "$(hostname)"
-    row "IP" "${PUBLIC_IP:-unknown}"
-    row "OS" "$(. /etc/os-release 2>/dev/null; echo "${PRETTY_NAME:-unknown}")"
-    row "RAM" "$(free -m | awk '/Mem:/ {printf "%d / %d MB", $3, $2}')"
-    row "Disk" "$(df -h / | awk 'NR==2 {print $3 " / " $2 " (" $5 ")"}')"
+    row "Host"   "$(hostname)"
+    row "IP"     "${PUBLIC_IP:-unknown}"
+    row "OS"     "$(. /etc/os-release 2>/dev/null; echo "${PRETTY_NAME:-unknown}")"
+    row "RAM"    "$(free -m | awk '/Mem:/ {printf "%d / %d MB", $3, $2}')"
+    row "Disk"   "$(df -h / | awk 'NR==2 {print $3 " / " $2 " (" $5 ")"}')"
     hline
     for s in nginx mariadb redis-server "php${PHP_VER}-fpm" pteroq docker wings; do svc "$s"; done
     hline
@@ -595,109 +649,84 @@ show_status() {
     return 0
 }
 
+# ---------------------------------------------------------------------
+#  SPLASH, LAUNCHER, MAIN MENU
+# ---------------------------------------------------------------------
 nexus_splash() {
     clear 2>/dev/null || true
     printf '\033[?25l'
     trap 'printf "\033[?25h"; exit 130' INT TERM
-
-    printf '\033[1;96m'
-    cat <<'ART'
-███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
-████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
-██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
-██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
-██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║
-╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
-ART
-    printf '\033[0m\n'
-    printf '  \033[1;95mN E X U S   H O S T\033[0m\n'
-    printf '  \033[1;96mDevelopers:\033[0m \033[1;92mKaidrix\033[0m \033[1;95m•\033[0m \033[1;93mNexusCloud Team\033[0m\n'
-    printf '  \033[1;95mVIP+ STARTUP SEQUENCE\033[0m\n'
-
-    local messages=(
-        "Fetching VIP+ command profile"
-        "Initializing VIP+ CMD module"
-        "Loading Nexus Host components"
-        "Checking system environment"
-        "Preparing command center"
-    )
+    nx_art
+    printf '\n  %sN E X U S   H O S T%s\n' "$M" "$N"
+    printf '  %sDevelopers:%s %sKaidrix%s | %sNexusCloud Team%s\n' "$C" "$N" "$G" "$N" "$Y" "$N"
+    printf '  %sVIP+ STARTUP SEQUENCE%s\n' "$M" "$N"
     local msg i
-    for msg in "${messages[@]}"; do
-        printf '  \033[1;96m[ VIP+ ]\033[0m \033[1;97m%s\033[0m' "$msg"
-        for ((i=0; i<3; i++)); do
-            printf '\033[1;93m.\033[0m'
-            sleep 0.12
-        done
-        printf ' \033[1;92mOK\033[0m\n'
+    for msg in "Fetching VIP+ command profile" "Initializing VIP+ CMD module" \
+               "Loading Nexus Host components" "Checking system environment" "Preparing command center"; do
+        printf '  %s[ VIP+ ]%s %s%s%s' "$C" "$N" "$W" "$msg" "$N"
+        for ((i = 0; i < 3; i++)); do printf '%s.%s' "$Y" "$N"; sleep 0.12; done
+        printf ' %sOK%s\n' "$G" "$N"
     done
-
-    printf '  \033[1;95mBOOTING SYSTEM \033[0m['
-    local i
-    for ((i=0; i<28; i++)); do
-        case $((i % 4)) in
-            0) printf '\033[1;96m█\033[0m' ;;
-            1) printf '\033[1;95m█\033[0m' ;;
-            2) printf '\033[1;93m█\033[0m' ;;
-            3) printf '\033[1;92m█\033[0m' ;;
-        esac
-        sleep 0.035
+    local g=(177 141 105 75 221 227)
+    printf '  %sBOOTING SYSTEM%s [' "$M" "$N"
+    for ((i = 0; i < 30; i++)); do
+        printf '\033[1;38;5;%sm█\033[0m' "${g[$((i * 6 / 30))]}"; sleep 0.035
     done
-    printf '] \033[1;92mONLINE\033[0m\n'
-    printf '\033[?25h\n'
+    printf '] %sONLINE%s\n\033[?25h\n' "$G" "$N"
     trap - INT TERM
     sleep 0.15
-    clear 2>/dev/null || true
 }
 
 launch_hub_feature() {
-    local path="$1"
-    local root encoded tmpfile
-    root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-    if [[ -f "$root/$path" ]]; then
-        bash "$root/$path"
-        return
-    fi
-
-    encoded="${path// /%20}"
-    tmpfile="$(mktemp)"
+    local path="$1" root encoded tmpfile result
+    root="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
+    if [[ -f "$root/$path" ]]; then bash "$root/$path"; return; fi
+    encoded="${path// /%20}"; tmpfile="$(mktemp)"
     if ! curl -fsSL "${REPO_RAW}/${encoded}" -o "$tmpfile"; then
-        printf '\033[1;91mCould not download:\033[0m %s\n' "$path"
-        rm -f "$tmpfile"
-        return 1
+        printf '  %s[FAIL]%s Could not download: %s\n' "$R" "$N" "$path"
+        rm -f "$tmpfile"; return 1
     fi
-    bash "$tmpfile"
-    local result=$?
-    rm -f "$tmpfile"
-    return "$result"
+    bash "$tmpfile"; result=$?
+    rm -f "$tmpfile"; return "$result"
+}
+
+# --- aligned menu: every cell is padded to a fixed width, so borders always line up ---
+mrow() {   # mrow KEY1 TEXT1 KEY2 TEXT2   (cell = 1 + 5 + 24 = 30 columns)
+    printf ' %s║%s %s%-5s%s%-24.24s%s║%s %s%-5s%s%-24.24s%s║%s\n' \
+        "$C" "$N" "$Y" "$1" "$N" "$2" "$C" "$N" "$Y" "$3" "$N" "$4" "$C" "$N"
+}
+
+draw_menu() {
+    local ram disk up pad
+    ram="$(free -m 2>/dev/null | awk '/Mem:/ {if ($2>0) printf "%d%%", $3/$2*100}')"; ram=${ram:-N/A}
+    disk="$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')"; disk=${disk:-N/A}
+    up="$(uptime -p 2>/dev/null | sed 's/^up //')"; up=${up:-unknown}; up=${up:0:20}
+    printf ' %s╔%s╦%s╗%s\n' "$C" "$(rep 30 ═)" "$(rep 30 ═)" "$N"
+    printf ' %s║%s%s%s%s║%s%s%s%s║%s\n' "$C" "$M" "$(ctr 'CORE INSTALLER' 30)" "$N" "$C" "$B" "$(ctr 'MANAGERS & EXTRAS' 30)" "$N" "$C" "$N"
+    printf ' %s╠%s╬%s╣%s\n' "$C" "$(rep 30 ═)" "$(rep 30 ═)" "$N"
+    mrow "[1]"  "Install Panel"        "[7]"  "Panel Manager"
+    mrow "[2]"  "Install Wings"        "[8]"  "Wings Manager"
+    mrow "[3]"  "Panel + Wings"        "[9]"  "Toolbox"
+    mrow "[4]"  "Link Wings to Panel"  "[10]" "Themes & Extensions"
+    mrow "[5]"  "System Status"        "[11]" "VM Manager"
+    mrow "[6]"  "Open Master Hub"      "[12]" "Extras"
+    printf ' %s╠%s╩%s╣%s\n' "$C" "$(rep 30 ═)" "$(rep 30 ═)" "$N"
+    pad=$(( 59 - (5 + ${#ram} + 8 + ${#disk} + 6 + ${#up}) ))
+    printf ' %s║%s %sRAM:%s %s  %sDISK:%s %s  %sUP:%s %s%*s %s║%s\n' \
+        "$C" "$N" "$G" "$N" "$ram" "$G" "$N" "$disk" "$G" "$N" "$up" "$pad" "" "$C" "$N"
+    printf ' %s╠%s╣%s\n' "$C" "$(rep 61 ═)" "$N"
+    printf ' %s║%s %s[0] Exit%s    %sChoose an option from 0 to 12%s%*s %s║%s\n' \
+        "$C" "$N" "$R" "$N" "$M" "$N" 18 "" "$C" "$N"
+    printf ' %s╚%s╝%s\n\n' "$C" "$(rep 61 ═)" "$N"
 }
 
 menu() {
-    local choice ram disk uptime_text
+    local choice
     while true; do
         banner
-        ram="$(free -m 2>/dev/null | awk '/Mem:/ {if ($2>0) printf "%d%%", $3/$2*100}')"
-        disk="$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')"
-        uptime_text="$(uptime -p 2>/dev/null | sed 's/^up //')"
-
-        printf '\n \033[1;96m╔════════════════════════════╦════════════════════════════╗\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;95m      CORE INSTALLER       \033[0m\033[1;96m║\033[0m \033[1;94m     MANAGERS & EXTRAS     \033[1;96m║\033[0m\n'
-        printf ' \033[1;96m╠════════════════════════════╬════════════════════════════╣\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;93m[1]\033[0m Install Panel            \033[1;96m║\033[0m \033[1;93m[7]\033[0m Panel Manager           \033[1;96m║\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;93m[2]\033[0m Install Wings            \033[1;96m║\033[0m \033[1;93m[8]\033[0m Wings Manager           \033[1;96m║\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;93m[3]\033[0m Panel + Wings            \033[1;96m║\033[0m \033[1;93m[9]\033[0m Toolbox                 \033[1;96m║\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;93m[4]\033[0m Link Wings to Panel      \033[1;96m║\033[0m \033[1;93m[10]\033[0m Themes & Extensions    \033[1;96m║\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;93m[5]\033[0m System Status            \033[1;96m║\033[0m \033[1;93m[11]\033[0m VM Manager             \033[1;96m║\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;93m[6]\033[0m Open Master Hub          \033[1;96m║\033[0m \033[1;93m[12]\033[0m Extras                 \033[1;96m║\033[0m\n'
-        printf ' \033[1;96m╠════════════════════════════╩════════════════════════════╣\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;92mRAM:\033[0m %-5s  \033[1;92mDISK:\033[0m %-5s  \033[1;92mUP:\033[0m %-19.19s \033[1;96m║\033[0m\n' \
-            "${ram:-N/A}" "${disk:-N/A}" "${uptime_text:-unknown}"
-        printf ' \033[1;96m╠════════════════════════════════════════════════════════╣\033[0m\n'
-        printf ' \033[1;96m║\033[0m \033[1;91m[0] Exit\033[0m      \033[1;95mChoose an option from 0 to 12\033[0m             \033[1;96m║\033[0m\n'
-        printf ' \033[1;96m╚════════════════════════════════════════════════════════╝\033[0m\n\n'
-        printf ' \033[1;95m➜\033[0m \033[1;97mYour choice:\033[0m '
+        draw_menu
+        printf ' %s>%s %sYour choice:%s ' "$M" "$N" "$W" "$N"
         read -r choice || choice=0
-
         case "$choice" in
             1) preflight; install_panel; pause ;;
             2) preflight; install_wings; pause ;;
@@ -711,14 +740,8 @@ menu() {
             10) launch_hub_feature "thame/run.sh"; pause ;;
             11) launch_hub_feature "setup vm/menu.sh"; pause ;;
             12) launch_hub_feature "Extras/run.sh"; pause ;;
-            0|exit|quit)
-                printf '\033[1;96mGoodbye from Nexus Host!\033[0m\n'
-                exit 0
-                ;;
-            *)
-                printf '\033[1;91mInvalid option. Choose 0–12.\033[0m\n'
-                sleep 1
-                ;;
+            0|exit|quit) printf '  %sGoodbye from Nexus Host!%s\n' "$C" "$N"; exit 0 ;;
+            *) printf '  %s[WARN]%s Invalid option. Choose 0-12.\n' "$Y" "$N"; sleep 1 ;;
         esac
     done
 }
@@ -726,11 +749,11 @@ menu() {
 main() {
     case "${1:-menu}" in
         status) preflight; banner; show_status ;;
-        panel) preflight; banner; install_panel ;;
-        wings) preflight; banner; install_wings ;;
-        both) preflight; banner; install_panel; install_wings ;;
-        link) preflight; banner; link_wings ;;
-        menu) nexus_splash; preflight; menu ;;
+        panel)  preflight; banner; install_panel ;;
+        wings)  preflight; banner; install_wings ;;
+        both)   preflight; banner; install_panel; install_wings ;;
+        link)   preflight; banner; link_wings ;;
+        menu)   nexus_splash; preflight; menu ;;
         *) echo "Usage: $0 [panel|wings|both|link|status]"; exit 1 ;;
     esac
 }
