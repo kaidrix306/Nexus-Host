@@ -3,7 +3,7 @@
 One-command Pterodactyl Panel + Wings installer, plus themes, extensions, SSL tools and more.
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB_USER/nexuscloud/main/nexus.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/nexuscloud/master/nexus.sh)
 ```
 
 `bash nexus.sh panel | wings | both | link | status`  -  option 6 opens the full hub menu.
