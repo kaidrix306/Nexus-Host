@@ -1,34 +1,70 @@
-# NexusCloud
+# ⚡ Nexus Host
 
-One-command Pterodactyl Panel + Wings installer, plus themes, extensions, SSL tools and more.
+<div align="center">
+
+**A unified terminal hub for server installation and management.**
+
+![Bash](https://img.shields.io/badge/Bash-Installer-00E5FF?style=for-the-badge&logo=gnubash&logoColor=black)
+![Linux](https://img.shields.io/badge/Linux-Ubuntu%20%7C%20Debian-FF3DCE?style=for-the-badge&logo=linux&logoColor=white)
+
+</div>
+
+Nexus Host brings server installation tools, management utilities, status checks, and extensions into one Bash interface.
+
+## Quick Start
+
+On a compatible Linux server, run:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/nexuscloud/blob/master/nexus.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/kaidrix306/Nexus-Host/master/nexus.sh)
 ```
 
-`bash nexus.sh panel | wings | both | link | status`  -  option 6 opens the full hub menu.
+Review scripts before running them with elevated privileges. Back up important data before changing your server.
 
-## Layout
-- `nexus.sh` main installer (Panel, Wings, link node, status)
-- `menu/` hub menu, `panel/` other panels (Jexactyl, Convoy, Paymenter, Reviactyl...)
-- `wings/`, `thame/` (Blueprint themes/extensions), `Extras/`, `setup vm/`
-- `publish.sh` replaces YOUR_GITHUB_USER and pushes with gh
+## Menu Options
 
-Ubuntu 22.04+/Debian 11+, root, 2GB RAM, domain pointed at the server, ports 80/443.
-License: CC0-1.0
+| Option | Feature |
+|---:|---|
+| 1 | Install Pterodactyl Panel |
+| 2 | Install Wings Node |
+| 3 | Install Panel + Wings |
+| 4 | Link Wings to Panel |
+| 5 | System Status |
+| 6 | Open Master Hub |
+| 7 | Panel Manager |
+| 8 | Wings Manager |
+| 9 | Toolbox |
+| 10 | Themes & Extensions |
+| 11 | VM Manager |
+| 12 | Extras |
+| 0 | Exit |
 
-## Shared UI
-Every script sources `lib/ui.sh` for the bright-colour palette (falls back to
-fetching it from your repo if run standalone via `curl | bash`). Colours are
-aliased per-script to the same eight bright tones nexus.sh uses — no dim or
-grey anywhere in the repo.
+Options depend on the scripts available in your checkout.
 
-## Removed for safety
-`menu/run.sh` from the original repo was a disguised backdoor: it wrote fake
-credentials to `~/.netrc` and silently downloaded + executed a remote payload
-from the original author's domain. It has been deleted, not adapted. A few
-other menu entries pointed at *other* un-shared repos by the original author
-(zerotier/tailscale/rdp helpers, an alternate wings manager, a VPS panel
-clone) — these now either point at the matching script that's actually
-included in this repo, or show a "not included" message instead of silently
-failing or fetching strangers' code.
+## Requirements
+
+- Bash
+- A compatible Linux server for installation tasks
+- Internet access to download dependencies
+- Root privileges for system-level changes
+
+## Repository Structure
+
+- `nexus.sh` — main launcher, splash screen, and menu
+- `menu/` — menu interface and hub tools
+- `panel/` — panel-related scripts
+- `wings/` — Wings-related scripts
+- `toolbox/` — utility scripts
+- `thame/` — themes and extensions
+- `setup vm/` — VM management tools
+- `Extras/` — additional utilities
+
+## Safety
+
+- Inspect scripts before executing them as root.
+- Back up server data before installation or configuration changes.
+- Never publish passwords, API keys, or access tokens.
+
+## Credits
+
+Created by **Kaidrix** and the **NexusCloud Team**.

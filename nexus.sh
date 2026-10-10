@@ -637,34 +637,43 @@ nexus_splash() {
 
     printf '\033[1;96m'
     cat <<'ART'
- _   _ _____  ___  _   _ __  __
-| \ | | ____|/ _ \| | | |  \/  |
-|  \| |  _| | | | | | | | |\/| |
-| |\  | |___| |_| | |_| | |  | |
-|_| \_|_____|\___/ \___/|_|  |_|
+███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
+████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
+██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
+██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
+██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║
+╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 ART
     printf '\033[0m\n'
     printf '  \033[1;95mN E X U S   H O S T\033[0m\n'
     printf '  \033[1;96mDevelopers:\033[0m \033[1;92mKaidrix\033[0m \033[1;95m•\033[0m \033[1;93mNexusCloud Team\033[0m\n'
-    printf '  \033[1;95mINITIALIZING \033[0m['
+    printf '  \033[1;95mBOOTING SYSTEM \033[0m['
 
     local i
-    for ((i=0; i<24; i++)); do
+    for ((i=0; i<28; i++)); do
         case $((i % 4)) in
             0) printf '\033[1;96m█\033[0m' ;;
             1) printf '\033[1;95m█\033[0m' ;;
             2) printf '\033[1;93m█\033[0m' ;;
             3) printf '\033[1;92m█\033[0m' ;;
         esac
-        sleep 0.04
+        sleep 0.035
+    done
+    printf '] \033[1;92mONLINE\033[0m\n'
+
+    for i in 1 2 3; do
+        printf '\033[1;91m  >> NEXUS HOST // SYSTEM READY <<\033[0m\r'
+        sleep 0.06
+        printf '\033[1;96m  >> NEXUS HOST // SYSTEM READY <<\033[0m\r'
+        sleep 0.06
     done
 
-    printf '] \033[1;92mREADY!\033[0m\n'
-    sleep 0.4
-    printf '\033[?25h'
+    printf '\033[?25h\n'
     trap - INT TERM
+    sleep 0.15
     clear 2>/dev/null || true
 }
+
 
 launch_hub_feature() {
     local path="$1"
