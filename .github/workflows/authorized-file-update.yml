@@ -1,0 +1,62 @@
+name: Nexus-Host Authorized File Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "File to update"
+        type: choice
+        required: true
+        options:
+          - nexus.sh
+          - README.md
+      content:
+        description: "Complete new file content"
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexus-host-file-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Update approved file
+        env:
+          TARGET: ${{ inputs.target }}
+          FILE_CONTENT: ${{ inputs.content }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          case "$TARGET" in
+            nexus.sh|README.md) ;;
+            *)
+              echo "Target file is not allowed"
+              exit 1
+              ;;
+          esac
+
+          printf '%s' "$FILE_CONTENT" > "$TARGET"
+          git diff --check
+
+          if git diff --quiet -- "$TARGET"; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+users.noreply.github.com"
+          git add -- "$TARGET"
+          git commit -m "chore: authorized update to $TARGET"
+          git push origin HEAD:master
