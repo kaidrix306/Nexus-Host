@@ -49,15 +49,23 @@ row_c() {                     # row_c "Label" "Text" "Colour"  (pads before colo
 
 banner() {
     clear 2>/dev/null || true
-    echo "${C}  _   _ _____ __  __ _   _ ____${N}"
-    echo "${B} | \\ | | ____|\\ \\/ /| | | / ___|${N}"
-    echo "${M} |  \\| |  _|   \\  / | | | \\___ \\${N}"
-    echo "${Y} | |\\  | |___  /  \\ | |_| |___) |${N}"
-    echo "${G} |_| \\_|_____|/_/\\_\\ \\___/|____/${N}"
-    echo
-    echo "${W}   C L O U D   -   P T E R O D A C T Y L${N}"
-    echo "${C}   Installer v${VERSION}  |  Panel + Wings${N}"
+    printf '\033[1;96m'
+    cat <<'ART'
+███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
+████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
+██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
+██║╚██╗██║╔══╝   ██╔██╗ ██║   ██║╚════██║
+██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║
+╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+ART
+    printf '\033[0m\n'
+    printf '  \033[1;95m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n'
+    printf '  \033[1;96m       N E X U S   H O S T\033[0m\n'
+    printf '  \033[1;93m     SERVER INSTALLATION & MANAGEMENT\033[0m\n'
+    printf '  \033[1;92m       By Kaidrix • NexusCloud Team\033[0m\n'
+    printf '  \033[1;95m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n'
 }
+
 
 ok()   { printf '  %s[ OK ]%s %s\n'   "$G" "$N" "$*"; }
 warn() { printf '  %s[WARN]%s %s\n'   "$Y" "$N" "$*"; }
@@ -711,20 +719,22 @@ menu() {
         disk="$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')"
         uptime_text="$(uptime -p 2>/dev/null | sed 's/^up //')"
 
-        printf '\n  %s╔════════════════════════════════════╦════════════════════════════════════╗%s\n' "$C" "$N"
-        printf '  %s║%s %sCORE INSTALLER%s                   %s║%s %sMANAGERS & EXTRAS%s                %s║%s\n' "$C" "$N" "$M" "$N" "$C" "$N" "$B" "$N" "$C" "$N"
-        printf '  %s║%s %s[1]%s Install Pterodactyl Panel     %s║%s %s[7]%s Panel Manager                   %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s %s[2]%s Install Wings Node            %s║%s %s[8]%s Wings Manager                  %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s %s[3]%s Install Panel + Wings         %s║%s %s[9]%s Toolbox                        %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s %s[4]%s Link Wings to Panel           %s║%s %s[10]%s Themes & Extensions            %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s %s[5]%s System Status                %s║%s %s[11]%s VM Manager                     %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s║%s %s[6]%s Open Master Hub              %s║%s %s[12]%s Extras                         %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N" "$G" "$N" "$C" "$N"
-        printf '  %s╠════════════════════════════════════╩════════════════════════════════════╣%s\n' "$C" "$N"
-        printf '  %s║%s %sRAM:%s %-7s %sDISK:%s %-6s %sUP:%s %-20s %s║%s\n' "$C" "$N" "$Y" "$N" "${ram:-N/A}" "$Y" "$N" "${disk:-N/A}" "$Y" "$N" "${uptime_text:-unknown}" "$C" "$N"
-        printf '  %s║%s %s[0]%s Exit                                                                    %s║%s\n' "$C" "$N" "$R" "$N" "$C" "$N"
-        printf '  %s╚══════════════════════════════════════════════════════════════════════════╝%s\n\n' "$C" "$N"
-
-        printf '  %s➜%s Choose option %s[0-12]%s: ' "$M" "$N" "$W" "$N"
+        printf '\n \033[1;96m╔════════════════════════════╦════════════════════════════╗\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;95m      CORE INSTALLER       \033[0m\033[1;96m║\033[0m \033[1;94m     MANAGERS & EXTRAS     \033[0m\033[1;96m║\033[0m\n'
+        printf ' \033[1;96m╠════════════════════════════╬════════════════════════════╣\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;93m[1]\033[0m Install Panel            \033[1;96m║\033[0m \033[1;93m[7]\033[0m Panel Manager           \033[1;96m║\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;93m[2]\033[0m Install Wings            \033[1;96m║\033[0m \033[1;93m[8]\033[0m Wings Manager           \033[1;96m║\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;93m[3]\033[0m Panel + Wings            \033[1;96m║\033[0m \033[1;93m[9]\033[0m Toolbox                 \033[1;96m║\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;93m[4]\033[0m Link Wings to Panel      \033[1;96m║\033[0m \033[1;93m[10]\033[0m Themes & Extensions    \033[1;96m║\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;93m[5]\033[0m System Status            \033[1;96m║\033[0m \033[1;93m[11]\033[0m VM Manager             \033[1;96m║\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;93m[6]\033[0m Open Master Hub          \033[1;96m║\033[0m \033[1;93m[12]\033[0m Extras                 \033[1;96m║\033[0m\n'
+        printf ' \033[1;96m╠════════════════════════════╩════════════════════════════╣\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;92mRAM:\033[0m %-5s  \033[1;92mDISK:\033[0m %-5s  \033[1;92mUP:\033[0m %-19.19s \033[1;96m║\033[0m\n' \
+            "${ram:-N/A}" "${disk:-N/A}" "${uptime_text:-unknown}"
+        printf ' \033[1;96m╠════════════════════════════════════════════════════════╣\033[0m\n'
+        printf ' \033[1;96m║\033[0m \033[1;91m[0] Exit\033[0m      \033[1;95mChoose an option from 0 to 12\033[0m             \033[1;96m║\033[0m\n'
+        printf ' \033[1;96m╚════════════════════════════════════════════════════════╝\033[0m\n\n'
+        printf ' \033[1;95m➜\033[0m \033[1;97mYour choice:\033[0m '
         read -r choice || choice=0
 
         case "$choice" in
@@ -740,11 +750,18 @@ menu() {
             10) launch_hub_feature "thame/run.sh"; pause ;;
             11) launch_hub_feature "setup vm/menu.sh"; pause ;;
             12) launch_hub_feature "Extras/run.sh"; pause ;;
-            0|exit|quit) printf '  %sGoodbye!%s\n' "$C" "$N"; exit 0 ;;
-            *) printf '\033[1;91mInvalid option. Choose 0–12.\033[0m\n'; sleep 1 ;;
+            0|exit|quit)
+                printf '\033[1;96mGoodbye from Nexus Host!\033[0m\n'
+                exit 0
+                ;;
+            *)
+                printf '\033[1;91mInvalid option. Choose 0–12.\033[0m\n'
+                sleep 1
+                ;;
         esac
     done
 }
+
 main() {
     case "${1:-menu}" in
         status) PUBLIC_IP=$(hostname -I 2>/dev/null | awk '{print $1}'); banner; show_status ;;
