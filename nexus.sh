@@ -132,7 +132,7 @@ valid_user()  { [[ $1 =~ ^[A-Za-z0-9_.-]{3,30}$ ]]; }
 #  PRE-FLIGHT
 # ---------------------------------------------------------------------
 preflight() {
-    [ "$EUID" -eq 0 ] || die "Run as root:  sudo -i  then run again"
+    [ "$EUID" -eq 0 ] || die "Run as root:  -i  then run again"
     [ -r /etc/os-release ] || die "Cannot detect OS"
     # shellcheck disable=SC1091
     . /etc/os-release
@@ -631,32 +631,40 @@ show_status() {
 #  MENU
 # ---------------------------------------------------------------------
 menu() {
+    local c ram disk up
     while true; do
         banner
-        echo
-        echo "   ${G}1${N}) ${W}Install Panel${N}"
-        echo "   ${G}2${N}) ${W}Install Wings${N}"
-        echo "   ${G}3${N}) ${W}Install Panel + Wings (same server)${N}"
-        echo "   ${G}4${N}) ${W}Link Wings to Panel${N}"
-        echo "   ${G}5${N}) ${W}System status${N}"
-        echo "   ${G}6${N}) ${W}Hub: themes, extensions, SSL, VM, extras${N}"
-        echo "   ${R}0${N}) ${W}Exit${N}"
-        hline
-        printf '  %sSelect%s: ' "$M" "$N"
-        read -r c
+        ram=$(free -m 2>/dev/null | awk '/Mem:/ {printf "%d%%", ($3/$2)*100}')
+        disk=$(df -h / 2>/dev/null | awk 'NR==2 {print $5}')
+        up=$(uptime -p 2>/dev/null | sed 's/^up //')
+        printf '\n  %s╔═══════════════════════════════════════════════════════╗%s\n' "$C" "$N"
+        printf '  %s║%s  %sN E X U S   H O S T%s  %sCONTROL CENTER%s           %s║%s\n' "$C" "$N" "$M" "$N" "$Y" "$N" "$C" "$N"
+        printf '  %s╠═══════════════════════════════════════════════════════╣%s\n' "$C" "$N"
+        printf '  %s║%s  %sSYSTEM%s RAM %s%-5s%s DISK %s%-5s%s UP %s%-12.12s%s %s║%s\n' "$C" "$N" "$Y" "$N" "$G" "${ram:-N/A}" "$N" "$B" "${disk:-N/A}" "$N" "$M" "${up:-unknown}" "$N" "$C" "$N"
+        printf '  %s╠═══════════════════════════════════════════════════════╣%s\n' "$C" "$N"
+        printf '  %s║%s  %sDEPLOYMENT%s                                       %s║%s\n' "$C" "$N" "$M" "$N" "$C" "$N"
+        printf '  %s║%s  %s[1]%s Install Pterodactyl Panel                     %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s  %s[2]%s Install Wings Node                           %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s  %s[3]%s Install Panel + Wings                        %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s  %s[4]%s Link Wings to Panel                          %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s╠═══════════════════════════════════════════════════════╣%s\n' "$C" "$N"
+        printf '  %s║%s  %sMAINTENANCE%s                                      %s║%s\n' "$C" "$N" "$B" "$N" "$C" "$N"
+        printf '  %s║%s  %s[5]%s System status                                %s║%s\n' "$C" "$N" "$G" "$N" "$C" "$N"
+        printf '  %s║%s  %s[0]%s Exit                                         %s║%s\n' "$C" "$N" "$R" "$N" "$C" "$N"
+        printf '  %s╚═══════════════════════════════════════════════════════╝%s\n\n' "$C" "$N"
+        printf '  %s➜%s %sChoose option [0-5]:%s ' "$M" "$N" "$W" "$N"
+        read -r c || c=0
         case "$c" in
             1) install_panel; pause ;;
             2) install_wings; pause ;;
             3) install_panel; install_wings; pause ;;
             4) link_wings; pause ;;
             5) show_status; pause ;;
-            6) bash <(curl -fsSL "${REPO_RAW}/menu/UI.sh") ;;
-            0) echo "  ${C}Bye from ${BRAND}!${N}"; exit 0 ;;
-            *) warn "Invalid option"; sleep 1 ;;
+            0|exit|quit) echo "  ${C}Bye from ${BRAND}!${N}"; exit 0 ;;
+            *) warn "Invalid option — choose 0 to 5"; sleep 1 ;;
         esac
     done
 }
-
 main() {
     case "${1:-menu}" in
         status) PUBLIC_IP=$(hostname -I 2>/dev/null | awk '{print $1}'); banner; show_status ;;
